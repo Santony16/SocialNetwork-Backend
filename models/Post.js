@@ -27,12 +27,12 @@ const Post = sequelize.define('Post', {
   is_instant: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
-    comment: '1: publicación inmediata'
+    comment: '1: Instant post'
   },
   scheduled_at: {
     type: DataTypes.DATE,
     allowNull: true,
-    comment: 'para publicaciones programadas'
+    comment: 'For scheduled posts'
   },
   status: {
     type: DataTypes.STRING(20),
