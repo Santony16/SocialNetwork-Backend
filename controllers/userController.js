@@ -4,15 +4,13 @@ const User = require('../models/User');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/database');
 
-// JWT Secret (en producción debe estar en variables de entorno)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
 
-// Registrar nuevo usuario
+// Register
 const registerUser = async (req, res) => {
     try {
         const { username, email, password, confirmPassword } = req.body;
 
-        // Validaciones básicas
         if (!username || !email || !password || !confirmPassword) {
             return res.status(400).json({
                 success: false,
@@ -34,7 +32,7 @@ const registerUser = async (req, res) => {
             });
         }
 
-        // Validar formato de email
+        // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({
@@ -43,7 +41,7 @@ const registerUser = async (req, res) => {
             });
         }
 
-        // Verificar si el usuario ya existe
+        // Verify user existence
         const existingUser = await User.findOne({
             where: {
                 [Op.or]: [
@@ -60,11 +58,10 @@ const registerUser = async (req, res) => {
             });
         }
 
-        // Encriptar la contraseña
         const saltRounds = 12;
         const password_hash = await bcrypt.hash(password, saltRounds);
 
-        // Crear el usuario
+        // Create user
         const newUser = await User.create({
             username,
             email,
@@ -72,7 +69,7 @@ const registerUser = async (req, res) => {
             two_factor_enabled: false
         });
 
-        // Generar token JWT
+        // Generate JWT token
         const token = jwt.sign(
             { 
                 userId: newUser.id, 
@@ -104,12 +101,11 @@ const registerUser = async (req, res) => {
     }
 };
 
-// Iniciar sesión
+// Sign in
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Validaciones básicas
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
@@ -117,7 +113,7 @@ const loginUser = async (req, res) => {
             });
         }
 
-        // Buscar usuario por email
+        // Search user by email
         const user = await User.findOne({
             where: { email: email }
         });
@@ -129,7 +125,7 @@ const loginUser = async (req, res) => {
             });
         }
 
-        // Verificar contraseña
+        // Verify password
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 
         if (!isPasswordValid) {
