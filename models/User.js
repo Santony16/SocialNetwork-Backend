@@ -32,6 +32,25 @@ const User = sequelize.define('User', {
   two_factor_secret: {
     type: DataTypes.TEXT,
     allowNull: true
+  },
+  googleId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
+  },
+  facebookId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
+  },
+  avatar: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  isVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false
   }
 }, {
   tableName: 'users',
