@@ -18,8 +18,7 @@ const SocialAccount = sequelize.define('SocialAccount', {
   },
   provider: {
     type: DataTypes.STRING(50),
-    allowNull: false,
-    comment: 'Examples: twitter, facebook, linkedin.'
+    allowNull: false
   },
   access_token: {
     type: DataTypes.TEXT,
@@ -35,7 +34,23 @@ const SocialAccount = sequelize.define('SocialAccount', {
   },
   created_at: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+    allowNull: true
+  },
+  provider_id: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  username: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  instance_url: {
+    type: DataTypes.STRING(500),
+    allowNull: true
+  },
+  connected_at: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 }, {
   tableName: 'social_accounts',
