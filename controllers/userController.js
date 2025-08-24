@@ -6,6 +6,10 @@ const { sequelize } = require('../config/database');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+if (!JWT_SECRET) {
+    console.error('JWT_SECRET is not defined in environment variables');
+}
+
 // Register
 const registerUser = async (req, res) => {
     try {
@@ -69,27 +73,17 @@ const registerUser = async (req, res) => {
             two_factor_enabled: false
         });
 
-        // Generate JWT token
-        const token = jwt.sign(
-            { 
-                userId: newUser.id, 
-                username: newUser.username,
-                email: newUser.email 
-            },
-            JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-
+        // Don't generate token automatically - user should login after registration
         res.status(201).json({
             success: true,
-            message: 'User registered successfully',
+            message: 'User registered successfully. Please sign in with your new account.',
             user: {
                 id: newUser.id,
                 username: newUser.username,
                 email: newUser.email,
                 created_at: newUser.created_at
-            },
-            token
+            }
+            // No token sent - user must login separately
         });
 
     } catch (error) {
@@ -135,9 +129,20 @@ const loginUser = async (req, res) => {
             });
         }
 
-        // Generate JWT token
+        // Check if user has 2FA enabled
+        if (user.two_factor_enabled && user.two_factor_secret) {
+            // Return response indicating 2FA is required
+            return res.status(200).json({
+                success: false,
+                requiresTwoFactor: true,
+                email: user.email
+            });
+        }
+
+        // Generate JWT token 
         const token = jwt.sign(
             { 
+                id: user.id,
                 userId: user.id, 
                 username: user.username,
                 email: user.email 
@@ -170,6 +175,7 @@ const loginUser = async (req, res) => {
 // Middleware to verify JWT
 const verifyToken = (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
+    console.log('verifyToken - token received:', !!token);
 
     if (!token) {
         return res.status(401).json({
@@ -180,9 +186,11 @@ const verifyToken = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
+        console.log('verifyToken - decoded token:', decoded);
         req.user = decoded;
         next();
     } catch (error) {
+        console.log('verifyToken - error:', error.message);
         res.status(401).json({
             success: false,
             message: 'Invalid token.'
